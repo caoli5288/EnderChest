@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.mengcraft</groupId>
   <artifactId>enderchest</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <name>EnderChest</name>
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
