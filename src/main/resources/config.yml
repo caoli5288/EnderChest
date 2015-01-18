@@ -1,0 +1,5 @@
+permission:
+  default: 3
+  vip: 4
+  svip: 5
+  ssvip: 6

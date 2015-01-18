@@ -1,0 +1,10 @@
+main: com.mengcraft.enderchest.EnderChest
+name: EnderChest
+version: 0.1.0
+
+permissions:
+  enderchest.default:
+    description: Default permission.
+    default: true
+    
+depend: [MengDB, ProtocolLib]
