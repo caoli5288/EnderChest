@@ -4,7 +4,7 @@
   <artifactId>enderchest</artifactId>
   <version>0.1.0</version>
   <name>EnderChest</name>
-    <properties>
+  <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -36,4 +36,12 @@
       <version>3.6.3-SNAPSHOT</version>
     </dependency>
   </dependencies>
+  <build>
+    <resources>
+      <resource>
+      <directory>src/main/resources</directory>
+      <filtering>true</filtering>
+      </resource>
+    </resources>
+  </build>
 </project>

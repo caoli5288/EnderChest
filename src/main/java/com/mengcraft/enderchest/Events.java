@@ -18,6 +18,7 @@ import org.bukkit.plugin.Plugin;
 import com.comphenix.protocol.utility.StreamSerializer;
 import com.mengcraft.db.MengDB;
 import com.mengcraft.db.MengRecord;
+import com.mengcraft.db.MengTable;
 
 public class Events implements Listener {
 
@@ -40,18 +41,23 @@ public class Events implements Listener {
 		} else {
 			int row = checkPermission(player);
 			Inventory empty = this.plugin.getServer().createInventory(null, row * 9, "container.enderchest");
-			fill(empty, player.getName());
+			// fill(empty, player.getName());
+			fill(player, empty);
 			this.inventories.put(player.getName(), empty);
-			
+
 			return empty;
 		}
 	}
 
-	private void fill(Inventory empty, String name) {
-		MengRecord record = MengDB.getManager().getTable("enderchest").findOne("name", name);
+	private void fill(HumanEntity player, Inventory empty) {
+		MengTable table = MengDB.getManager().getTable("enderchest");
+		MengRecord record = table.findOne("name", player.getName());
 		if (record != null) {
 			List<String> items = record.getStringList("items");
 			ItemStack[] stacks = getItems(items, empty.getSize());
+			empty.setContents(stacks);
+		} else {
+			ItemStack[] stacks = player.getEnderChest().getContents();
 			empty.setContents(stacks);
 		}
 	}
