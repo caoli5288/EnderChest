@@ -7,4 +7,14 @@ permissions:
     description: Default permission.
     default: true
     
+  enderchest.admin:
+    description: Admin permission.
+    default: op
+    
+commands:
+  chest:
+    description: Default command.
+    permission: enderchest.admin
+    uasge: /chest <name>
+    
 depend: [MengDB, ProtocolLib]

@@ -8,9 +8,11 @@ import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -22,31 +24,29 @@ import com.mengcraft.db.MengTable;
 
 public class Events implements Listener {
 
-	private final Map<String, Inventory> inventories = DataManager.getManager().getInventories();
+	private final Map<String, Inventory> map = DataManager.getManager().getInventories();
 	private final Plugin plugin;
 
 	@EventHandler
 	public void open(InventoryOpenEvent event) {
 		String type = event.getInventory().getType().name();
 		if (type.equals("ENDER_CHEST")) {
-			Inventory inventory = getInventory(event.getPlayer());
+			Inventory inventory = this.map.get(event.getPlayer().getName());
 			this.plugin.getServer().getScheduler().runTaskLater(this.plugin, new OpenTask(event.getPlayer(), inventory), 1);
 			event.setCancelled(true);
 		}
 	}
 
-	private Inventory getInventory(HumanEntity player) {
-		if (this.inventories.containsKey(player.getName())) {
-			return this.inventories.get(player.getName());
-		} else {
-			int row = checkPermission(player);
-			Inventory empty = this.plugin.getServer().createInventory(null, row * 9, "container.enderchest");
-			// fill(empty, player.getName());
-			fill(player, empty);
-			this.inventories.put(player.getName(), empty);
+	@EventHandler
+	public void join(PlayerJoinEvent event) {
+		init(event.getPlayer());
+	}
 
-			return empty;
-		}
+	private void init(Player player) {
+		int row = checkPermission(player);
+		Inventory empty = this.plugin.getServer().createInventory(null, row * 9, "container.enderchest");
+		fill(player, empty);
+		this.map.put(player.getName(), empty);
 	}
 
 	private void fill(HumanEntity player, Inventory empty) {

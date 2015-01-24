@@ -30,6 +30,7 @@ public class EnderChest extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		getServer().getPluginManager().registerEvents(new Events(this), this);
+		getCommand("chest").setExecutor(new Commands());
 		String[] messages = {
 				ChatColor.GREEN + "梦梦家服务器出租|我的世界|淘宝店",
 				ChatColor.GREEN + "http://shop105595113.taobao.com/"
