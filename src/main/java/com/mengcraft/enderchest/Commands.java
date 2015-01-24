@@ -21,6 +21,7 @@ public class Commands implements CommandExecutor {
 			return false;
 		} else if (args.length < 2) {
 			getWithName((Player) sender, args[0]);
+			return true;
 		}
 		return false;
 	}
