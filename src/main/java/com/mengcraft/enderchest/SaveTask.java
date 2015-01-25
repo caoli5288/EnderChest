@@ -38,7 +38,6 @@ public class SaveTask implements Runnable {
 	}
 	
 	private List<String> fromStacks(ItemStack[] contents) {
-
 		List<String> list = new ArrayList<>();
 		for (ItemStack item : contents) {
 			list.add(fromStack(item));

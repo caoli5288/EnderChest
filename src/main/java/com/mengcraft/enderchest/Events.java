@@ -73,6 +73,12 @@ public class Events implements Listener {
 	private void transform(HumanEntity player, Inventory empty) {
 		ItemStack[] origin = player.getEnderChest().getContents();
 		for (ItemStack item : origin) {
+			checkAdd(empty, item);
+		}
+	}
+
+	private void checkAdd(Inventory empty, ItemStack item) {
+		if (item != null) {
 			empty.addItem(item);
 		}
 	}
