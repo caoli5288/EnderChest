@@ -53,7 +53,7 @@ public class Events implements Listener {
 
 	private void init(HumanEntity player) {
 		int row = checkPermission(player);
-		Inventory empty = this.plugin.getServer().createInventory(null, row * 9, "container.enderchest");
+		Inventory empty = this.plugin.getServer().createInventory(player, row * 9, "container.enderchest");
 		checkFill(player, empty);
 		this.map.put(player.getName(), empty);
 	}
