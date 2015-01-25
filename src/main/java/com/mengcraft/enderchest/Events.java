@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryOpenEvent;
@@ -31,6 +30,7 @@ public class Events implements Listener {
 	public void open(InventoryOpenEvent event) {
 		String type = event.getInventory().getType().name();
 		if (type.equals("ENDER_CHEST")) {
+			checkInit(event.getPlayer());
 			Inventory inventory = this.map.get(event.getPlayer().getName());
 			this.plugin.getServer().getScheduler().runTaskLater(this.plugin, new OpenTask(event.getPlayer(), inventory), 1);
 			event.setCancelled(true);
@@ -42,7 +42,7 @@ public class Events implements Listener {
 		checkInit(event.getPlayer());
 	}
 
-	private void checkInit(Player player) {
+	private void checkInit(HumanEntity player) {
 		Inventory object = this.map.get(player.getName());
 		if (object != null) {
 			// Do nothings.
@@ -51,14 +51,14 @@ public class Events implements Listener {
 		}
 	}
 
-	private void init(Player player) {
+	private void init(HumanEntity player) {
 		int row = checkPermission(player);
 		Inventory empty = this.plugin.getServer().createInventory(null, row * 9, "container.enderchest");
-		fill(player, empty);
+		checkFill(player, empty);
 		this.map.put(player.getName(), empty);
 	}
 
-	private void fill(HumanEntity player, Inventory empty) {
+	private void checkFill(HumanEntity player, Inventory empty) {
 		MengTable table = MengDB.getManager().getTable("enderchest");
 		MengRecord record = table.findOne("name", player.getName());
 		if (record != null) {
@@ -66,8 +66,14 @@ public class Events implements Listener {
 			ItemStack[] stacks = getItems(items, empty.getSize());
 			empty.setContents(stacks);
 		} else {
-			ItemStack[] stacks = player.getEnderChest().getContents();
-			empty.setContents(stacks);
+			transform(player, empty);
+		}
+	}
+
+	private void transform(HumanEntity player, Inventory empty) {
+		ItemStack[] origin = player.getEnderChest().getContents();
+		for (ItemStack item : origin) {
+			empty.addItem(item);
 		}
 	}
 
@@ -77,7 +83,7 @@ public class Events implements Listener {
 			String in = iterator.next();
 			list.add(fromString(in));
 		}
-		return list.toArray(new ItemStack[] {});
+		return list.toArray(new ItemStack[i]);
 	}
 
 	private ItemStack fromString(String in) {
