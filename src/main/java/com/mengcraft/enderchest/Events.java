@@ -39,7 +39,16 @@ public class Events implements Listener {
 
 	@EventHandler
 	public void join(PlayerJoinEvent event) {
-		init(event.getPlayer());
+		checkInit(event.getPlayer());
+	}
+
+	private void checkInit(Player player) {
+		Inventory object = this.map.get(player.getName());
+		if (object != null) {
+			// Do nothings.
+		} else {
+			init(player);
+		}
 	}
 
 	private void init(Player player) {
