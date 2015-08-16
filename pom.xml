@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.mengcraft</groupId>
   <artifactId>enderchest</artifactId>
-  <version>0.1.4</version>
+  <version>0.2-SNAPSHOT</version>
   <name>EnderChest</name>
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
@@ -10,10 +10,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <repositories>
-    <repository>
-      <id>repo.bukkit.org</id>
-      <url>http://repo.bukkit.org/content/groups/public/</url>
-    </repository>
     <repository>
       <id>ci.mengcraft.com</id>
       <url>http://ci.mengcraft.com:8080/plugin/repository/everything/</url>
@@ -23,25 +19,12 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>1.6.4-R2.0</version>
+      <version>1.6.4-R2.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.mengcraft</groupId>
-      <artifactId>mengdb</artifactId>
-      <version>0.1.5</version>
-    </dependency>
-    <dependency>
-      <groupId>com.comphenix.protocol</groupId>
-      <artifactId>ProtocolLib</artifactId>
-      <version>3.6.3-SNAPSHOT</version>
+      <artifactId>simpleorm</artifactId>
+      <version>0.1.4</version>
     </dependency>
   </dependencies>
-  <build>
-    <resources>
-      <resource>
-      <directory>src/main/resources</directory>
-      <filtering>true</filtering>
-      </resource>
-    </resources>
-  </build>
 </project>

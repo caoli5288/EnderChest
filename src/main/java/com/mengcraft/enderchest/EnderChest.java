@@ -1,30 +1,58 @@
 package com.mengcraft.enderchest;
 
-import org.bukkit.ChatColor;
-import org.bukkit.plugin.java.JavaPlugin;
+import java.sql.Timestamp;
 
-public class EnderChest extends JavaPlugin {
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
-	@Override
-	public void onLoad() {
-		saveDefaultConfig();
+import com.avaje.ebean.annotation.UpdatedTimestamp;
+
+@Entity
+public class EnderChest {
+
+	@Id
+	private int id;
+
+	@Column(unique = true)
+	private String player;
+
+	@Column(columnDefinition = "text")
+	private String chest;
+
+	@UpdatedTimestamp
+	private Timestamp timeUpdate;
+
+	public Timestamp getTimeUpdate() {
+		return timeUpdate;
 	}
 
-	@Override
-	public void onEnable() {
-		getServer().getPluginManager().registerEvents(new Events(this), this);
-		getServer().getScheduler().runTaskTimer(this, new SaveTask(), 6000, 6000);
-		getCommand("chest").setExecutor(new Commands());
-		String[] messages = {
-				ChatColor.GREEN + "梦梦家服务器出租|我的世界|淘宝店",
-				ChatColor.GREEN + "http://shop105595113.taobao.com/"
-		};
-		getServer().getConsoleSender().sendMessage(messages);
+	public void setTimeUpdate(Timestamp timeUpdate) {
+		this.timeUpdate = timeUpdate;
 	}
 
-	@Override
-	public void onDisable() {
-		new SaveTask().run();
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getPlayer() {
+		return player;
+	}
+
+	public void setPlayer(String player) {
+		this.player = player;
+	}
+
+	public String getChest() {
+		return chest;
+	}
+
+	public void setChest(String chest) {
+		this.chest = chest;
 	}
 
 }
