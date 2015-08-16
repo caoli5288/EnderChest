@@ -75,7 +75,7 @@ public class Executor implements Listener {
 		}
 
 		private Inventory createInventory() {
-			return main.getServer().createInventory(holder, point());
+			return main.getServer().createInventory(holder, point() * 9);
 		}
 
 		private void fill(Inventory inventory) {
