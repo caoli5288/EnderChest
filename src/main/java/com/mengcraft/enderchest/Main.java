@@ -19,7 +19,7 @@ public class Main extends JavaPlugin {
 		        .getProvider();
 		EbeanHandler handler = manager.getHandler(this);
 
-		if (!handler.isInitialize()) {
+		if (!handler.isInitialized()) {
 			handler.define(EnderChest.class);
 			try {
 				handler.initialize();
