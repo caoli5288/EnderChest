@@ -7,10 +7,4 @@ permissions:
     description: Admin permission.
     default: op
     
-commands:
-  chest:
-    description: Default command.
-    permission: enderchest.admin
-    uasge: /chest <name>
-    
 depend: [SimpleORM]
