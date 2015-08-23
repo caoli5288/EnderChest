@@ -2,6 +2,9 @@ package com.mengcraft.enderchest;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,6 +12,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -46,24 +51,23 @@ public class Executor implements Listener {
 		InventoryType type = event.getInventory().getType();
 		if (type.equals(InventoryType.ENDER_CHEST)) {
 			main.getServer().getScheduler()
-			        .runTask(main, new B(event.getPlayer()));
+			                .runTask(main, new Open(event.getPlayer()));
 			event.setCancelled(true);
 		}
 	}
 
 	private final Holder holder = new Holder();
 
-	private class B implements Runnable {
+	private class Open implements Runnable {
 
 		private final HumanEntity player;
 
-		public B(HumanEntity player) {
+		public Open(HumanEntity player) {
 			this.player = player;
 		}
 
 		public void run() {
 			if (player instanceof Player) {
-				player.closeInventory();
 				player.openInventory(getInventory());
 			}
 		}
@@ -108,7 +112,34 @@ public class Executor implements Listener {
 
 	@EventHandler
 	public void handle(PlayerJoinEvent event) {
-		service.execute(new A(event.getPlayer().getName()));
+		if (transform(event.getPlayer()) != 0) {
+			String[] strings = {
+					ChatColor.GOLD + "在取出原版末影箱时发生了一些问题",
+					ChatColor.GOLD + "您的背包空余空间无法存放所有物品",
+					ChatColor.GOLD + "这些无法存放的物品已经返回末影箱",
+					ChatColor.GOLD + "请整理背包后重新上下线以取出他们",
+			};
+			event.getPlayer().sendMessage(strings);
+		}
+		service.execute(new Fetch(event.getPlayer().getName()));
+	}
+
+	private int transform(Player p) {
+		Collection<ItemStack> array = new ArrayList<>();
+		for (ItemStack stack : p.getEnderChest()) {
+			if (stack != null && stack.getTypeId() != 0) array.add(stack);
+		}
+		// Check if origin ender-chest is empty.
+		if (array.size() != 0) {
+			array = p.getInventory()
+					 .addItem(array.toArray(new ItemStack[] {}))
+					 .values();
+		}
+		// Check if player's inventory is full.
+		if (array.size() != 0) {
+			p.getEnderChest().addItem(array.toArray(new ItemStack[] {}));
+		}
+		return array.size();
 	}
 
 	@EventHandler
@@ -118,7 +149,7 @@ public class Executor implements Listener {
 			for (ItemStack stack : event.getInventory().getContents()) {
 				fill(list, stack);
 			}
-			service.execute(new C(event.getPlayer().getName(), list.toString()));
+			service.execute(new Push(event.getPlayer().getName(), list.toString()));
 		}
 	}
 
@@ -133,12 +164,12 @@ public class Executor implements Listener {
 		}
 	}
 
-	private class C implements Runnable {
+	private class Push implements Runnable {
 
 		private final String name;
 		private final String data;
 
-		public C(String name, String data) {
+		public Push(String name, String data) {
 			this.name = name;
 			this.data = data;
 		}
@@ -151,11 +182,11 @@ public class Executor implements Listener {
 
 	}
 
-	private class A implements Runnable {
+	private class Fetch implements Runnable {
 
 		private final String name;
 
-		public A(String name) {
+		public Fetch(String name) {
 			this.name = name;
 		}
 
@@ -181,11 +212,12 @@ public class Executor implements Listener {
 
 	public void bind(Main main, ItemUtil util) {
 		if (this.main == null) {
+			main.getServer().getPluginManager().registerEvents(this, main);
+			// Setup environment.
 			this.main = main;
 			this.util = util;
 			this.size = main.getConfig().getInt("defaultSize", 3);
 		}
-		main.getServer().getPluginManager().registerEvents(this, main);
 	}
 
 }
