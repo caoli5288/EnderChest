@@ -127,6 +127,7 @@ public class Executor implements Listener {
 		for (ItemStack stack : p.getEnderChest()) {
 			if (stack != null && stack.getTypeId() != 0) array.add(stack);
 		}
+		p.getEnderChest().clear();
 		// Check if origin ender-chest is empty.
 		if (array.size() != 0) {
 			array = p.getInventory()
