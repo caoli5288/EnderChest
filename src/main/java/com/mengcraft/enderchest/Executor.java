@@ -132,7 +132,7 @@ public class Executor implements Listener {
 
 	@EventHandler
 	public void handle(InventoryCloseEvent event) {
-		if (event.getInventory().getHolder().equals(holder)) {
+		if (holder.equals(event.getInventory().getHolder())) {
 			JSONArray list = new JSONArray();
 			for (ItemStack stack : event.getInventory().getContents()) {
 				fill(list, stack);
