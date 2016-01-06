@@ -41,4 +41,8 @@ public class Main extends JavaPlugin {
 		new Executor().bind(this, util);
 	}
 
+	public void execute(Runnable runnable) {
+		getServer().getScheduler().runTaskAsynchronously(this, runnable);
+	}
+
 }

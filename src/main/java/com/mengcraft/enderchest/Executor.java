@@ -1,16 +1,5 @@
 package com.mengcraft.enderchest;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-
 import org.bukkit.ChatColor;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -26,6 +15,12 @@ import org.bukkit.inventory.ItemStack;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONValue;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class Executor implements Listener {
 
 	private final Map<String, EnderChest> cache;
@@ -34,13 +29,7 @@ public class Executor implements Listener {
 	private ItemUtil util;
 	private int size;
 
-	private final ExecutorService service;
-
 	public Executor() {
-		this.service = new ThreadPoolExecutor(
-		        1, 4,
-		        60, SECONDS,
-		        new LinkedBlockingQueue());
 		this.cache = new ConcurrentHashMap<>();
 	}
 
@@ -91,7 +80,7 @@ public class Executor implements Listener {
 		}
 
 		private ItemStack convert(String string) {
-			try {
+			if (string != null) try {
 				return util.convert(string);
 			} catch (Exception e) {
 				main.getLogger().warning(e.getMessage());
@@ -119,7 +108,7 @@ public class Executor implements Listener {
 			};
 			event.getPlayer().sendMessage(strings);
 		}
-		service.execute(new Fetch(event.getPlayer().getName()));
+		main.execute(new Fetch(event.getPlayer().getName()));
 	}
 
 	private int transform(Player p) {
@@ -148,7 +137,7 @@ public class Executor implements Listener {
 			for (ItemStack stack : event.getInventory().getContents()) {
 				fill(list, stack);
 			}
-			service.execute(new Push(event.getPlayer().getName(), list.toString()));
+			main.execute(new Push(event.getPlayer().getName(), list.toString()));
 		}
 	}
 
