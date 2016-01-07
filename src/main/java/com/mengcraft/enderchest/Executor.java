@@ -73,7 +73,7 @@ public class Executor implements Listener {
 			EnderChest chest = cache.get(player.getName());
 			if (chest != null && chest.getChest() != null) {
 				List<String> list = (List) JSONValue.parse(chest.getChest());
-				for (int i = 0; i < inventory.getSize(); i++) {
+				for (int i = 0; i < list.size() && i < inventory.getSize(); i++) {
 					inventory.setItem(i, convert(list.get(i)));
 				}
 			}
