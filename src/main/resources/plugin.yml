@@ -8,3 +8,4 @@ permissions:
     default: op
     
 depend: [SimpleORM]
+softdepend: [ProtocolLib]

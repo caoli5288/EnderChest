@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mengcraft</groupId>
     <artifactId>enderchest</artifactId>
-    <version>0.2.2.2</version>
+    <version>0.3</version>
     <name>EnderChest</name>
     <properties>
         <maven.compiler.source>1.7</maven.compiler.source>
@@ -23,12 +23,26 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.6.4-R2.1-SNAPSHOT</version>
+            <version>1.8.8-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.mengcraft</groupId>
             <artifactId>simpleorm</artifactId>
-            <version>0.1.5</version>
+            <version>0.6</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib</artifactId>
+            <version>4.2.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.16</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
     <build>

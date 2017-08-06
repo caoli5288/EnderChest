@@ -1,10 +1,9 @@
 package com.mengcraft.enderchest;
 
-import org.bukkit.ChatColor;
-import org.bukkit.plugin.java.JavaPlugin;
-
 import com.mengcraft.simpleorm.EbeanHandler;
 import com.mengcraft.simpleorm.EbeanManager;
+import org.bukkit.ChatColor;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
 
@@ -37,8 +36,8 @@ public class Main extends JavaPlugin {
                 ChatColor.GREEN + "shop105595113.taobao.com"
         };
         getServer().getConsoleSender().sendMessage(strings);
-		
-		new Executor().bind(this, util);
+
+		new Executor().bind(this, util, handler.getServer());
 	}
 
 	public void execute(Runnable runnable) {

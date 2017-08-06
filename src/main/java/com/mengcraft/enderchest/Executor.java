@@ -1,5 +1,6 @@
 package com.mengcraft.enderchest;
 
+import com.avaje.ebean.EbeanServer;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -17,21 +18,23 @@ import org.json.simple.JSONValue;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
+import static com.mengcraft.enderchest.$.nil;
+
 public class Executor implements Listener {
 
-    private final Map<String, EnderChest> cache;
     private final List<UUID> list = new ArrayList<>();
+    private final Map<String, EnderChest> cache;
 
     private Main main;
     private ItemUtil util;
     private int size;
+    private EbeanServer db;
 
     public Executor() {
         this.cache = new ConcurrentHashMap<>();
@@ -173,7 +176,7 @@ public class Executor implements Listener {
 
         public synchronized void run() {
             chest.setChest(data);
-            main.getDatabase().save(chest);
+            db.save(chest);
         }
 
     }
@@ -187,16 +190,15 @@ public class Executor implements Listener {
         }
 
         public void run() {
-            EnderChest c = main.getDatabase()
-                    .find(EnderChest.class)
-                    .where()
-                    .eq("player", name)
+            EnderChest chest = db.find(EnderChest.class)
+                    .where("player = :player")
+                    .setParameter("player", name)
                     .findUnique();
-            if (c == null) {
-                c = main.getDatabase().createEntityBean(EnderChest.class);
-                c.setPlayer(name);
+            if (nil(chest)) {
+                chest = db.createEntityBean(EnderChest.class);
+                chest.setPlayer(name);
             }
-            cache.put(name, c);
+            cache.put(name, chest);
         }
 
     }
@@ -206,13 +208,14 @@ public class Executor implements Listener {
         cache.remove(event.getPlayer().getName());
     }
 
-    public void bind(Main main, ItemUtil util) {
+    public void bind(Main main, ItemUtil util, EbeanServer db) {
         if (this.main == null) {
             main.getServer().getPluginManager().registerEvents(this, main);
             // Setup environment.
             this.main = main;
             this.util = util;
             this.size = main.getConfig().getInt("defaultSize", 3);
+            this.db = db;
         }
     }
 

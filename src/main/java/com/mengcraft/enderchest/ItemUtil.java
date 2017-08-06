@@ -1,5 +1,9 @@
 package com.mengcraft.enderchest;
 
+import com.comphenix.protocol.utility.StreamSerializer;
+import org.bukkit.inventory.ItemStack;
+import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -10,66 +14,36 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.bukkit.inventory.ItemStack;
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
-
 public interface ItemUtil {
 
     String convert(ItemStack in) throws Exception;
 
     ItemStack convert(String in) throws Exception;
 
-    class WarpedItemUtil implements ItemUtil {
-        
-        private final String path = "com.comphenix.protocol.utility.StreamSerializer";
-        
-        private Object handle;
-        
-        private Class<?> serializer;
+    String id();
 
-        private Method serializeItemStack;
-        private Method deserializeItemStack;
+    class PLib implements ItemUtil {
+
+        private final StreamSerializer i = new StreamSerializer();
+
+        @Override
+        public String id() {
+            return "protocollib";
+        }
 
         @Override
         public String convert(ItemStack in) throws Exception {
-            if (handle == null) {
-                serializer = getClass().getClassLoader().loadClass(path);
-                handle = serializer.newInstance();
-            }
-            return serializeItemStack(in);
-        }
-
-        private String serializeItemStack(ItemStack in) throws Exception {
-            if (serializeItemStack == null) {
-                serializeItemStack = serializer.getMethod(
-                        "serializeItemStack", ItemStack.class
-                        );
-            }
-            return (String) serializeItemStack.invoke(handle, in);
+            return i.serializeItemStack(in);
         }
 
         @Override
         public ItemStack convert(String in) throws Exception {
-            if (handle == null) {
-                serializer = getClass().getClassLoader().loadClass(path);
-                handle = serializer.newInstance();
-            }
-            return deserializeItemStack(in);
+            return i.deserializeItemStack(in);
         }
-
-        private ItemStack deserializeItemStack(String in) throws Exception {
-            if (deserializeItemStack == null) {
-                deserializeItemStack = serializer.getMethod(
-                        "deserializeItemStack", String.class
-                        );
-            }
-            return (ItemStack) deserializeItemStack.invoke(handle, in);
-        }
-
     }
-    
+
     @SuppressWarnings("all")
-    public static class SimpleItemUtil implements ItemUtil {
+    class NMS implements ItemUtil {
 
         private final String cb;
         private final String nms;
@@ -85,11 +59,18 @@ public interface ItemUtil {
         private Class itemStack;
 
         private Object a;
-        
+
         private Constructor copy;
         private Constructor mirror;
-        
+
+        private Constructor item;
+
         private Field handle;
+
+        @Override
+        public String id() {
+            return "build-in";
+        }
 
         @Override
         public String convert(ItemStack in) throws Exception {
@@ -139,9 +120,16 @@ public interface ItemUtil {
         }
 
         private Object create(Object tag) throws Exception {
-            if (create == null) {
-                create = itemStack.getMethod("createStack", nbtTagCompound);
+            if (create == null && item == null) {
+                try {
+                    create = itemStack.getMethod("createStack", nbtTagCompound);
+                } catch (NoSuchMethodException e) {
+                    item = itemStack.getDeclaredConstructor(nbtTagCompound);
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                }
             }
+            if (!(item == null)) return item.newInstance(tag);
             return create.invoke(itemStack, tag);
         }
 
@@ -149,12 +137,12 @@ public interface ItemUtil {
             if (load == null) {
                 load = nbtTagCompound.getDeclaredMethod("load",
                         DataInput.class, int.class, nbtReadLimiter
-                        );
+                );
                 load.setAccessible(true);
             }
             DataInput input = new DataInputStream(
                     new ByteArrayInputStream(Base64Coder.decode(in))
-                    );
+            );
             Object tag = nbtTagCompound.newInstance();
             load.invoke(tag, input, 0, a());
             return tag;
@@ -172,7 +160,7 @@ public interface ItemUtil {
             if (write == null) {
                 write = nbtTagCompound.getDeclaredMethod("write",
                         DataOutput.class
-                        );
+                );
                 write.setAccessible(true);
             }
             write.invoke(tags, new DataOutputStream(out));
@@ -192,7 +180,7 @@ public interface ItemUtil {
             return getClass().getClassLoader().loadClass(path);
         }
 
-        SimpleItemUtil(String version) {
+        NMS(String version) {
             this.cb = "org.bukkit.craftbukkit." + version;
             this.nms = "net.minecraft.server." + version;
         }
