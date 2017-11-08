@@ -1,11 +1,15 @@
 package com.mengcraft.enderchest;
 
-import com.avaje.ebean.EbeanServer;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -13,119 +17,145 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONValue;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 
-import static com.mengcraft.enderchest.$.nil;
+import static com.mengcraft.enderchest.Main.nil;
+import static org.bukkit.event.inventory.ClickType.LEFT;
+import static org.bukkit.event.inventory.ClickType.RIGHT;
 
-public class Executor implements Listener {
+public class Executor implements Listener, CommandExecutor {
 
-    private final List<UUID> list = new ArrayList<>();
-    private final Map<String, EnderChest> cache;
+    private final Map<String, Holder> cache;
 
     private Main main;
-    private ItemUtil util;
-    private int size;
-    private EbeanServer db;
+    private String title;
+
+    private boolean getOrigin;
+    private int minRow;
+    private int maxRow;
+    private String[] warning;
 
     public Executor() {
         this.cache = new ConcurrentHashMap<>();
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command arg1, String arg2,
+                             String[] args) {
+        if (sender instanceof Player) {
+            Player player = Player.class.cast(sender);
+            if (args.length != 1) {
+                open(player);
+            } else try {
+                openWithPage(player, Integer.parseInt(args[0]) - 1);
+            } catch (Exception e) {
+                player.sendMessage(ChatColor.DARK_RED + "发生了一些问题");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private void openWithPage(Player player, int page) {
+        Holder holder = getCache().get(player.getName());
+        if (holder != null && holder.hasPage(page)) {
+            holder.setPage(page);
+            open(player);
+        } else {
+            player.sendMessage(ChatColor.DARK_RED + "发生了一些问题");
+        }
+    }
+
+    public void bind(Main main, ItemUtil util) {
+        if (this.main == null) {
+            main.getServer().getPluginManager().registerEvents(this, main);
+            main.getCommand("enderchest").setExecutor(this);
+            // Setup environment.
+            this.title = main.getConfig().getString("global.title", "第%d页");
+            this.main = main;
+            this.minRow = main.getConfig().getInt("global.minRow", 3);
+            this.maxRow = main.getConfig().getInt("global.maxRow", 30);
+            this.getOrigin = main.getConfig().getBoolean("global.getOrigin");
+            this.warning = main.getConfig()
+                    .getStringList("global.warning")
+                    .toArray(new String[]{});
+        }
+    }
+
+    @EventHandler
+    public void handle(PlayerJoinEvent event) {
+        Holder holder = new Holder();
+        holder.setPlayer(event.getPlayer())
+                .setMaxRow(getMaxRow(event.getPlayer(), maxRow))
+                .setTitle(title);
+        getCache().put(event.getPlayer().getName(), holder);
+        if (getOrigin && transform(event.getPlayer()) != 0) {
+            event.getPlayer().sendMessage(warning);
+        }
+        Main.runAsync(holder::update);
+    }
+
+    @EventHandler
+    public void handle(InventoryClickEvent event) {
+        if (event.getView().getTopInventory().getHolder() instanceof Holder) {
+            int slot = event.getRawSlot();
+            if (slot == -999) {
+                if (event.getClick().equals(LEFT)) {
+                    openWithOffset(event.getWhoClicked(), 1);
+                } else if (event.getClick().equals(RIGHT)) {
+                    openWithOffset(event.getWhoClicked(), -1);
+                }
+            }
+        }
     }
 
     @EventHandler
     public void handle(InventoryOpenEvent event) {
         InventoryType type = event.getInventory().getType();
         if (type.equals(InventoryType.ENDER_CHEST)) {
-            main.getServer().getScheduler()
-                    .runTask(main, new Open(event.getPlayer()));
+            openWithOffset(event.getPlayer(), 0);
             event.setCancelled(true);
-            list.add(event.getPlayer().getUniqueId());
-        }
-    }
-
-    private final Holder holder = new Holder();
-
-    private class Open implements Runnable {
-
-        private final HumanEntity player;
-
-        public Open(HumanEntity player) {
-            this.player = player;
-        }
-
-        public void run() {
-            if (player instanceof Player) {
-                player.openInventory(getInventory());
-            }
-        }
-
-        private Inventory getInventory() {
-            Inventory inventory = createInventory();
-            fill(inventory);
-            return inventory;
-        }
-
-        private Inventory createInventory() {
-            return main.getServer().createInventory(holder, point() * 9);
-        }
-
-        private void fill(Inventory inventory) {
-            EnderChest chest = cache.get(player.getName());
-            if (chest != null && chest.getChest() != null) {
-                List<String> list = (List) JSONValue.parse(chest.getChest());
-                for (int i = 0; i < list.size() && i < inventory.getSize(); i++) {
-                    inventory.setItem(i, convert(list.get(i)));
-                }
-            }
-        }
-
-        private ItemStack convert(String string) {
-            if (string != null) try {
-                return util.convert(string);
-            } catch (Exception e) {
-                main.getLogger().warning(e.getMessage());
-            }
-            return null;
-        }
-
-        private int point() {
-            int i = 9;
-            while (!player.hasPermission("enderchest.size." + i) && i > 0) {
-                i = i - 1;
-            }
-            return i > size ? i : size;
         }
     }
 
     @EventHandler
-    public void handle(PlayerJoinEvent event) {
-        if (transform(event.getPlayer()) != 0) {
-            String[] strings = {
-                    ChatColor.GOLD + "在取出原版末影箱时发生了一些问题",
-                    ChatColor.GOLD + "您的背包空余空间无法存放所有物品",
-                    ChatColor.GOLD + "这些无法存放的物品已经返回末影箱",
-                    ChatColor.GOLD + "请整理背包后重新上下线以取出他们",
-            };
-            event.getPlayer().sendMessage(strings);
+    public void handle(InventoryCloseEvent event) {
+        if (event.getInventory().getHolder() instanceof Holder) {
+            Pair<Integer, Inventory> removal = Open.OPEN_INVENTORY.remove(event.getPlayer().getUniqueId());
+            if (nil(removal)) {
+                return;
+            }
+
+            Holder holder = (Holder) event.getInventory().getHolder();
+            holder.close(removal);
         }
-        main.execute(new Fetch(event.getPlayer().getName()));
+    }
+
+    @EventHandler
+    public void handle(PlayerQuitEvent event) {
+        Holder remove = cache.remove(event.getPlayer().getName());
+        Main.runAsync(remove::saveAll);
+    }
+
+    public int getMaxRow(Player player, int i) {
+        while (!player.hasPermission("enderchest.size." + i) && i > minRow) {
+            i = i - 1;
+        }
+        return i;
     }
 
     private int transform(Player p) {
         Collection<ItemStack> array = new ArrayList<>();
+        // Purge and transform origin ender chest.
         for (ItemStack stack : p.getEnderChest()) {
             if (stack != null && stack.getTypeId() != 0) array.add(stack);
         }
         p.getEnderChest().clear();
-        // Check if origin end-er-chest is empty.
+
         if (array.size() != 0) {
             array = p.getInventory()
                     .addItem(array.toArray(new ItemStack[]{}))
@@ -138,85 +168,27 @@ public class Executor implements Listener {
         return array.size();
     }
 
-    @EventHandler
-    public void handle(InventoryCloseEvent event) {
-        if (holder.equals(event.getInventory().getHolder()) && list.remove(event.getPlayer().getUniqueId())) {
-            JSONArray list = new JSONArray();
-            for (ItemStack stack : event.getInventory().getContents()) {
-                fill(list, stack);
-            }
-            main.getLogger().log(Level.SEVERE, "Scheduled chest save for " + event.getPlayer().getName() +
-                    "!");
-            main.execute(new Push(cache.get(event.getPlayer().getName()),
-                    list.toString())
-            );
-        }
+    /**
+     * Let given player open his chest on current page.
+     *
+     * @param player
+     */
+    private void open(HumanEntity player) {
+        openWithOffset(player, 0);
     }
 
-    private void fill(List list, ItemStack stack) {
-        if (stack != null && stack.getTypeId() != 0) try {
-            list.add(util.convert(stack));
-        } catch (Exception e) {
-            main.getLogger().warning(e.getMessage());
-        }
-        else {
-            list.add(null);
-        }
+    /**
+     * Let given player open his chest with given page offset.
+     *
+     * @param player Player who will open chest.
+     * @param offset Chest page offset.
+     */
+    private void openWithOffset(HumanEntity player, int offset) {
+        Bukkit.getScheduler().runTask(main, new Open(getCache(), player, offset));
     }
 
-    private class Push implements Runnable {
-
-        private final EnderChest chest;
-        private final String data;
-
-        public Push(EnderChest chest, String data) {
-            this.chest = chest;
-            this.data = data;
-        }
-
-        public synchronized void run() {
-            chest.setChest(data);
-            db.save(chest);
-        }
-
-    }
-
-    private class Fetch implements Runnable {
-
-        private final String name;
-
-        public Fetch(String name) {
-            this.name = name;
-        }
-
-        public void run() {
-            EnderChest chest = db.find(EnderChest.class)
-                    .where("player = :player")
-                    .setParameter("player", name)
-                    .findUnique();
-            if (nil(chest)) {
-                chest = db.createEntityBean(EnderChest.class);
-                chest.setPlayer(name);
-            }
-            cache.put(name, chest);
-        }
-
-    }
-
-    @EventHandler
-    public void handle(PlayerQuitEvent event) {
-        cache.remove(event.getPlayer().getName());
-    }
-
-    public void bind(Main main, ItemUtil util, EbeanServer db) {
-        if (this.main == null) {
-            main.getServer().getPluginManager().registerEvents(this, main);
-            // Setup environment.
-            this.main = main;
-            this.util = util;
-            this.size = main.getConfig().getInt("defaultSize", 3);
-            this.db = db;
-        }
+    public Map<String, Holder> getCache() {
+        return cache;
     }
 
 }

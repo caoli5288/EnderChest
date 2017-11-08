@@ -1,6 +1,7 @@
 package com.mengcraft.enderchest;
 
 import com.comphenix.protocol.utility.StreamSerializer;
+import lombok.SneakyThrows;
 import org.bukkit.inventory.ItemStack;
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
@@ -14,11 +15,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import static com.mengcraft.enderchest.Main.nil;
+
 public interface ItemUtil {
 
-    String convert(ItemStack in) throws Exception;
+    String convert(ItemStack in);
 
-    ItemStack convert(String in) throws Exception;
+    ItemStack convert(String in);
 
     String id();
 
@@ -31,13 +34,15 @@ public interface ItemUtil {
             return "protocollib";
         }
 
+        @SneakyThrows
         @Override
-        public String convert(ItemStack in) throws Exception {
+        public String convert(ItemStack in) {
             return i.serializeItemStack(in);
         }
 
+        @SneakyThrows
         @Override
-        public ItemStack convert(String in) throws Exception {
+        public ItemStack convert(String in) {
             return i.deserializeItemStack(in);
         }
     }
@@ -73,7 +78,8 @@ public interface ItemUtil {
         }
 
         @Override
-        public String convert(ItemStack in) throws Exception {
+        @SneakyThrows
+        public String convert(ItemStack in) {
             if (craftItemStack == null) {
                 initialize();
             }
@@ -89,7 +95,8 @@ public interface ItemUtil {
         }
 
         @Override
-        public ItemStack convert(String in) throws Exception {
+        @SneakyThrows
+        public ItemStack convert(String in) {
             if (craftItemStack == null) {
                 initialize();
             }
@@ -129,7 +136,7 @@ public interface ItemUtil {
                     e.printStackTrace();
                 }
             }
-            if (!(item == null)) return item.newInstance(tag);
+            if (!nil(item)) return item.newInstance(tag);
             return create.invoke(itemStack, tag);
         }
 

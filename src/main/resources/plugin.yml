@@ -1,11 +1,19 @@
 main: com.mengcraft.enderchest.Main
 name: EnderChest
-version: ${project.version}
+version: 0.4.1
 
 permissions:
+  enderchest.use:
+    description: Admin permission.
+    default: op
   enderchest.admin:
     description: Admin permission.
     default: op
-    
+
+commands:
+  enderchest:
+    aliases: [ec, echest]
+    description: Default command.
+    permission: enderchest.use
+
 depend: [SimpleORM]
-softdepend: [ProtocolLib]

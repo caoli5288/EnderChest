@@ -9,8 +9,9 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.Arrays;
 
-import static com.mengcraft.enderchest.$.nil;
-import static com.mengcraft.enderchest.$.thr;
+import static com.mengcraft.enderchest.Main.nil;
+import static com.mengcraft.enderchest.Main.thr;
+
 
 public class ItemUtilHandler {
 

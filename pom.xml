@@ -3,54 +3,43 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mengcraft</groupId>
     <artifactId>enderchest</artifactId>
-    <version>0.3</version>
+    <version>17.11-SNAPSHOT</version>
     <name>EnderChest</name>
     <properties>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <repositories>
         <repository>
             <id>ci.mengcraft.com</id>
             <url>http://ci.mengcraft.com:8080/plugin/repository/everything/</url>
         </repository>
-        <repository>
-            <id>repo-md-5</id>
-            <url>http://repo.md-5.net/content/groups/public/</url>
-        </repository>
     </repositories>
     <dependencies>
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>1.8.8-R0.1-SNAPSHOT</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.18</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.mengcraft</groupId>
-            <artifactId>simpleorm</artifactId>
-            <version>0.6</version>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.8.8-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib</artifactId>
-            <version>4.2.1</version>
+            <version>4.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.16.16</version>
+            <groupId>com.mengcraft</groupId>
+            <artifactId>simpleorm</artifactId>
+            <version>0.7</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-    </build>
 </project>
