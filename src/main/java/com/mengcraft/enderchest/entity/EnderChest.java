@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -25,11 +26,11 @@ public class EnderChest {
     private String player;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "chest")
-    private List<EnderChestStack> all;
+    private List<EnderChestStack> all = new ArrayList<>();
 
     @Column
     private String contend;
 
     @Transient
-    private List<Row> allRow;
+    private List<Row> allRow = new ArrayList<>();
 }
