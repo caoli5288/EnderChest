@@ -1,4 +1,6 @@
 # EnderChest
+Bukkit-based Minecraft server plugin. Released under GPLv2.
+
 ## Command
 - /enderchest
 	- Open chest.

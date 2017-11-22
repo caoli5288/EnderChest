@@ -28,8 +28,10 @@ public class EnderChest {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "chest")
     private List<EnderChestStack> all = new ArrayList<>();
 
-    @Column
+    @Column(columnDefinition = "LONGTEXT")
     private String contend;
+
+    private int maxRow;
 
     @Transient
     private List<Row> allRow = new ArrayList<>();

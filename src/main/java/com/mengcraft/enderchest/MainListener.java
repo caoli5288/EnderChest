@@ -27,9 +27,11 @@ import static com.mengcraft.enderchest.Main.nil;
 import static org.bukkit.event.inventory.ClickType.LEFT;
 import static org.bukkit.event.inventory.ClickType.RIGHT;
 
-public class Executor implements Listener, CommandExecutor {
+public enum MainListener implements Listener, CommandExecutor {
 
-    private final Map<String, Holder> cache;
+    INSTANCE;
+
+    private final Map<String, Holder> pool = new ConcurrentHashMap<>();
 
     private Main main;
     private String title;
@@ -38,10 +40,6 @@ public class Executor implements Listener, CommandExecutor {
     private int minRow;
     private int maxRow;
     private String[] warning;
-
-    public Executor() {
-        this.cache = new ConcurrentHashMap<>();
-    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command arg1, String arg2,
@@ -61,7 +59,7 @@ public class Executor implements Listener, CommandExecutor {
     }
 
     private void openWithPage(Player player, int page) {
-        Holder holder = getCache().get(player.getName());
+        Holder holder = pool.get(player.getName());
         if (holder != null && holder.hasPage(page)) {
             holder.setPage(page);
             open(player);
@@ -70,17 +68,18 @@ public class Executor implements Listener, CommandExecutor {
         }
     }
 
-    public void bind(Main main, ItemUtil util) {
-        if (this.main == null) {
-            main.getServer().getPluginManager().registerEvents(this, main);
-            main.getCommand("enderchest").setExecutor(this);
+    public static void bind(Main main) {
+        MainListener i = INSTANCE;
+        if (i.main == null) {
+            main.getServer().getPluginManager().registerEvents(i, main);
+            main.getCommand("enderchest").setExecutor(i);
             // Setup environment.
-            this.title = main.getConfig().getString("global.title", "第%d页");
-            this.main = main;
-            this.minRow = main.getConfig().getInt("global.minRow", 3);
-            this.maxRow = main.getConfig().getInt("global.maxRow", 30);
-            this.getOrigin = main.getConfig().getBoolean("global.getOrigin");
-            this.warning = main.getConfig()
+            i.title = main.getConfig().getString("global.title", "第%d页");
+            i.main = main;
+            i.minRow = main.getConfig().getInt("global.minRow", 3);
+            i.maxRow = main.getConfig().getInt("global.maxRow", 30);
+            i.getOrigin = main.getConfig().getBoolean("global.getOrigin");
+            i.warning = main.getConfig()
                     .getStringList("global.warning")
                     .toArray(new String[]{});
         }
@@ -92,7 +91,7 @@ public class Executor implements Listener, CommandExecutor {
         holder.setPlayer(event.getPlayer())
                 .setMaxRow(getMaxRow(event.getPlayer(), maxRow))
                 .setTitle(title);
-        getCache().put(event.getPlayer().getName(), holder);
+        pool.put(event.getPlayer().getName(), holder);
         if (getOrigin && transform(event.getPlayer()) != 0) {
             event.getPlayer().sendMessage(warning);
         }
@@ -137,8 +136,12 @@ public class Executor implements Listener, CommandExecutor {
 
     @EventHandler
     public void handle(PlayerQuitEvent event) {
-        Holder remove = cache.remove(event.getPlayer().getName());
+        Holder remove = pool.remove(event.getPlayer().getName());
         Main.runAsync(remove::saveAll);
+    }
+
+    public Holder holderFor(Player p) {
+        return pool.get(p.getName());
     }
 
     public int getMaxRow(Player player, int i) {
@@ -184,11 +187,7 @@ public class Executor implements Listener, CommandExecutor {
      * @param offset Chest page offset.
      */
     private void openWithOffset(HumanEntity player, int offset) {
-        Bukkit.getScheduler().runTask(main, new Open(getCache(), player, offset));
-    }
-
-    public Map<String, Holder> getCache() {
-        return cache;
+        Bukkit.getScheduler().runTask(main, new Open(pool, player, offset));
     }
 
 }

@@ -6,6 +6,7 @@ import com.mengcraft.enderchest.entity.EnderChestStack;
 import com.mengcraft.enderchest.entity.Row;
 import lombok.Data;
 import lombok.SneakyThrows;
+import lombok.experimental.var;
 import lombok.val;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -20,7 +21,7 @@ import static com.mengcraft.enderchest.Main.nil;
 @Data
 public class Holder implements InventoryHolder {
 
-    private EnderChest chest;
+    private EnderChest entity;
     private Player player;
 
     private String title;
@@ -48,7 +49,7 @@ public class Holder implements InventoryHolder {
         int i = idx + input.size();
 
         List<Row> nList = new ArrayList<>();
-        List<Row> all = chest.getAllRow();
+        List<Row> all = entity.getAllRow();
         if (all.size() >= idx) {
             nList.addAll(all.subList(0, idx));
         }
@@ -56,15 +57,15 @@ public class Holder implements InventoryHolder {
         if (all.size() >= i) {
             nList.addAll(all.subList(i, all.size()));
         }
-        chest.setAllRow(nList);
+        entity.setAllRow(nList);
 
-        if (Main.flip(chest)) Main.runAsync(this::saveAll);
+        if (Main.flip(entity)) Main.runAsync(this::saveAll);
     }
 
     private List<Row> pickRow() {
         int idx = page * ROW_PER_PAGE;
         int i = idx + getPageRow();
-        val all = chest.getAllRow();
+        val all = entity.getAllRow();
         if (all.size() < idx) {
             return ImmutableList.of();
         }
@@ -88,11 +89,7 @@ public class Holder implements InventoryHolder {
     }
 
     public void saveAll() {
-        Main.getDb().save(chest);
-    }
-
-    public EnderChest getEntity() {
-        return chest;
+        Main.getDb().save(entity);
     }
 
     /**
@@ -149,17 +146,16 @@ public class Holder implements InventoryHolder {
 
     @SneakyThrows
     public void update() {
-        EnderChest i = Main.getDb().find(EnderChest.class)
+        var i = Main.getDb().find(EnderChest.class)
                 .where("player = :name")
                 .setParameter("name", player.getName())
                 .findUnique();
         if (nil(i)) {
             i = Main.getDb().createEntityBean(EnderChest.class);
             i.setPlayer(player.getName());
-            i.setAllRow(new ArrayList<>());
-            chest = i;
+            entity = i;
         } else {
-            chest = i;
+            entity = i;
             if (nil(i.getContend())) {
                 List<EnderChestStack> allPage = i.getAll();
                 if (!(nil(allPage) || allPage.isEmpty())) {
@@ -172,6 +168,7 @@ public class Holder implements InventoryHolder {
             } else {
                 Main.buildRow(i);
             }
+            maxRow += i.getMaxRow();
         }
     }
 
