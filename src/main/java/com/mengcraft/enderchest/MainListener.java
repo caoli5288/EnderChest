@@ -89,7 +89,8 @@ public enum MainListener implements Listener, CommandExecutor {
     public void handle(PlayerJoinEvent event) {
         Holder holder = new Holder();
         holder.setPlayer(event.getPlayer())
-                .setMaxRow(getMaxRow(event.getPlayer(), maxRow))
+                .addMaxRow(getMaxRow(event.getPlayer(), maxRow))
+                .addMaxRow(getExtRow(event.getPlayer(), maxRow))
                 .setTitle(title);
         pool.put(event.getPlayer().getName(), holder);
         if (getOrigin && transform(event.getPlayer()) != 0) {
@@ -146,6 +147,13 @@ public enum MainListener implements Listener, CommandExecutor {
 
     public int getMaxRow(Player player, int i) {
         while (!player.hasPermission("enderchest.size." + i) && i > minRow) {
+            i = i - 1;
+        }
+        return i;
+    }
+
+    public int getExtRow(Player player, int i) {
+        while (!(player.hasPermission("enderchest.extra." + i) || i == 0)) {
             i = i - 1;
         }
         return i;

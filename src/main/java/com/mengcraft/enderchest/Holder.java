@@ -126,6 +126,11 @@ public class Holder implements InventoryHolder {
         return this;
     }
 
+    public Holder addMaxRow(int maxRow) {
+        this.maxRow += maxRow;
+        return this;
+    }
+
     public String getTitle() {
         return String.format(title, page + 1);
     }
