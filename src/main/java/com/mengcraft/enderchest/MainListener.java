@@ -138,7 +138,11 @@ public enum MainListener implements Listener, CommandExecutor {
     @EventHandler
     public void handle(PlayerQuitEvent event) {
         Holder remove = pool.remove(event.getPlayer().getName());
-        Main.runAsync(remove::saveAll);
+        Pair<Integer, Inventory> removal = Open.OPEN_INVENTORY.remove(event.getPlayer().getUniqueId());
+        if (nil(removal)) {
+            return;
+        }
+        remove.close(removal);
     }
 
     public Holder holderFor(Player p) {
