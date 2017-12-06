@@ -16,22 +16,20 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.json.simple.JSONArray;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 
+import static java.util.stream.Collectors.toList;
 import static org.bukkit.util.NumberConversions.toInt;
 
 public class Main extends JavaPlugin {
 
-    private static Messenger messenger;
     private static EbeanServer database;
     private static ItemUtil itemUtil;
-
-    public static Messenger getMessenger() {
-        return messenger;
-    }
 
     public static EbeanServer getDb() {
         return database;
@@ -43,10 +41,16 @@ public class Main extends JavaPlugin {
     public static boolean flip(EnderChest i) {
         List<String> list = new ArrayList<>();
         i.getAllRow().forEach(row -> list.addAll(row.toRawList()));
-        String old = i.getContend();
-        String ctx = JSONArray.toJSONString(list);
-        i.setContend(ctx);
-        return !ctx.equals(old);
+
+        String prev = i.getContend();
+        if (nil(prev) && filter(list, l -> !l.isEmpty()).isEmpty()) {
+            return false;
+        }
+
+        String output = JSONArray.toJSONString(list);
+        i.setContend(output);
+
+        return !output.equals(prev);
     }
 
     public static void buildRow(EnderChest i) {
@@ -58,8 +62,6 @@ public class Main extends JavaPlugin {
     public void onEnable() {
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
-
-        messenger = new Messenger(this);
 
         itemUtil = new ItemUtilHandler(this).handle();
 
@@ -183,6 +185,10 @@ public class Main extends JavaPlugin {
             Bukkit.getLogger().log(Level.WARNING, thr, thr::getMessage);
             return null;
         });
+    }
+
+    public static <T> List<T> filter(Collection<T> input, Predicate<T> predicate) {
+        return input.stream().filter(predicate).collect(toList());
     }
 
     private static final ItemStack AIR = new ItemStack(Material.AIR);
