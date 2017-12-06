@@ -78,8 +78,8 @@ public class Main extends JavaPlugin {
             }
         }
 
-		handler.install();
-		handler.reflect();
+        handler.install(true);
+        handler.reflect();
 
         database = handler.getServer();
 
@@ -90,6 +90,7 @@ public class Main extends JavaPlugin {
         getServer().getConsoleSender().sendMessage(strings);
 
         MainListener.bind(this);
+        Bukkit.getOnlinePlayers().forEach(p -> MainListener.INSTANCE.join(p));
 
         PluginHelper.addExecutor(this, "ecadm", "enderchest.admin", this::admin);
     }

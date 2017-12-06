@@ -87,14 +87,18 @@ public enum MainListener implements Listener, CommandExecutor {
 
     @EventHandler
     public void handle(PlayerJoinEvent event) {
+        join(event.getPlayer());
+    }
+
+    void join(Player p) {
         Holder holder = new Holder();
-        holder.setPlayer(event.getPlayer())
-                .addMaxRow(getMaxRow(event.getPlayer(), maxRow))
-                .addMaxRow(getExtRow(event.getPlayer(), maxRow))
+        holder.setPlayer(p)
+                .addMaxRow(getMaxRow(p, maxRow))
+                .addMaxRow(getExtRow(p, maxRow))
                 .setTitle(title);
-        pool.put(event.getPlayer().getName(), holder);
-        if (getOrigin && transform(event.getPlayer()) != 0) {
-            event.getPlayer().sendMessage(warning);
+        pool.put(p.getName(), holder);
+        if (getOrigin && transform(p) != 0) {
+            p.sendMessage(warning);
         }
         Main.runAsync(holder::update);
     }

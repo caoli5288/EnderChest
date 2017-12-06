@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mengcraft</groupId>
     <artifactId>enderchest</artifactId>
-    <version>17.11-SNAPSHOT</version>
+    <version>17.12-SNAPSHOT</version>
     <name>EnderChest</name>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
