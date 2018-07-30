@@ -6,6 +6,7 @@ import com.mengcraft.enderchest.entity.EnderChestStack;
 import com.mengcraft.enderchest.entity.Row;
 import com.mengcraft.simpleorm.EbeanHandler;
 import com.mengcraft.simpleorm.EbeanManager;
+import com.mengcraft.simpleorm.ORM;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -30,6 +31,11 @@ public class Main extends JavaPlugin {
 
     private static EbeanServer database;
     private static ItemUtil itemUtil;
+    private static Messenger messenger;
+
+    public static Messenger getMessenger() {
+        return messenger;
+    }
 
     public static EbeanServer getDb() {
         return database;
@@ -64,6 +70,7 @@ public class Main extends JavaPlugin {
         saveDefaultConfig();
 
         itemUtil = new ItemUtilHandler(this).handle();
+        messenger = new Messenger(this);
 
 		EbeanManager manager = getServer().getServicesManager()
 		        .getRegistration(EbeanManager.class)
@@ -81,7 +88,7 @@ public class Main extends JavaPlugin {
         }
 
         handler.install(true);
-        handler.reflect();
+//        handler.reflect();
 
         database = handler.getServer();
 

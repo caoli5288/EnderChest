@@ -21,6 +21,6 @@ public class EnderChestStack {
     @ManyToOne
     private EnderChest chest;
 
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "LONGTEXT")
     private String stack;
 }

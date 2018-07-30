@@ -41,6 +41,8 @@ public enum MainListener implements Listener, CommandExecutor {
     private int maxRow;
     private String[] warning;
 
+    private int joindelay;
+
     @Override
     public boolean onCommand(CommandSender sender, Command arg1, String arg2,
                              String[] args) {
@@ -82,12 +84,13 @@ public enum MainListener implements Listener, CommandExecutor {
             i.warning = main.getConfig()
                     .getStringList("global.warning")
                     .toArray(new String[]{});
+            i.joindelay = main.getConfig().getInt("join_delay");
         }
     }
 
     @EventHandler
     public void handle(PlayerJoinEvent event) {
-        join(event.getPlayer());
+        Bukkit.getScheduler().runTaskLater(main, () -> join(event.getPlayer()), joindelay);
     }
 
     void join(Player p) {
@@ -121,8 +124,13 @@ public enum MainListener implements Listener, CommandExecutor {
     public void handle(InventoryOpenEvent event) {
         InventoryType type = event.getInventory().getType();
         if (type.equals(InventoryType.ENDER_CHEST)) {
-            openWithOffset(event.getPlayer(), 0);
             event.setCancelled(true);
+            HumanEntity who = event.getPlayer();
+            if (pool.containsKey(who.getName())) {
+                openWithOffset(who, 0);
+            } else {
+                Main.getMessenger().send(who, "chest_not_ready", "等待末影箱加载");
+            }
         }
     }
 
